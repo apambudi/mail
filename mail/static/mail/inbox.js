@@ -70,8 +70,19 @@ function show_email(id, mailbox) {
   .then(email => {
     // Add HTML element to display the email content
     let element = document.createElement('p');
-    element.innerHTML = `From: ${email.sender}<br>To: ${email.recipients}<br>Subject: ${email.subject}<br>Timestamp: ${email.timestamp}<br><br>${email.body}`;
-    document.getElementById('email-view').append(element);
+    element.innerHTML = `From: ${email.sender}<br>To: ${email.recipients}<br>Subject: ${email.subject}<br>Timestamp: ${email.timestamp}<br>`;
+    document.querySelector('#email-view').append(element);
+
+    // Add reply button 
+    let reply_element = document.createElement('button');
+    reply_element.innerHTML = 'Reply';
+    reply_element.addEventListener('click', () => reply_email(email.sender, email.subject, email.timestamp, email.body))
+    document.querySelector('#email-view').append(reply_element);
+
+    // Add body
+    const body = document.createElement('p');
+    body.innerHTML = `<br>${email.body}<br>`;
+    document.querySelector('#email-view').append(body);
 
     // Add button to archive or unarchive the email
     const arc_element = document.createElement('button');
@@ -115,6 +126,28 @@ function show_email(id, mailbox) {
         read: true,
     })
   })
+}
+
+function reply_email(sender, subject, timestamp, body) {
+  console.log('this is it')
+
+  // Show the email view and hide other views
+  document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#compose-view').style.display = 'block';
+  document.querySelector('#email-view').style.display = 'none';
+
+  // Fill the recipient email
+  document.querySelector('#compose-recipients').value = `${sender}`;
+
+  // Fill the subject email
+  if (subject.slice(0,3) != 'Re:') {
+    document.querySelector('#compose-subject').value = `Re: ${subject}`;
+  } else {
+    document.querySelector('#compose-subject').value = `${subject}`;
+  }
+
+  // Prefill the body of the email
+  document.querySelector('#compose-body').innerHTML = `On ${timestamp} ${sender} wrote: ${body}`;
 }
 
 function send_email(event) {
