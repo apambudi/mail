@@ -34,11 +34,10 @@ function load_mailbox(mailbox) {
   document.querySelector('#compose-view').style.display = 'none';
   document.querySelector('#email-view').style.display = 'none';
 
-
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
 
-  // Send a GET request to the URL
+  // Send a GET request
   fetch(`/emails/${mailbox}`)
   .then(response => response.json())
   .then(emails => {emails.forEach(email => {
@@ -51,33 +50,69 @@ function load_mailbox(mailbox) {
     else {
       element.style.backgroundColor = "white";
     }
-    let id = email.id;
-    // element.addEventListener('click', show_email);
-    element.addEventListener('click', () => show_email(id));
+    // let id = email.id;
+    element.addEventListener('click', () => show_email(email.id, mailbox));
     document.querySelector('#emails-view').append(element);
     })
   });
 }
 
-function show_email(id) {
+function show_email(id, mailbox) {
 
-  // Show the email content and hide other views
+  // Show the email view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'none';
   document.querySelector('#email-view').style.display = 'block';
 
+  // GET request for the email content
   fetch(`/emails/${id}`)
   .then(response => response.json())
   .then(email => {
-    let element1 = document.createElement('p');
-    element1.innerHTML = `From: ${email.sender}<br>To: ${email.recipients}<br>Subject: ${email.subject}<br>Timestamp: ${email.timestamp}<br><br>${email.body}`;
-    document.getElementById('email-view').append(element1);
+    // Add HTML element to display the email content
+    let element = document.createElement('p');
+    element.innerHTML = `From: ${email.sender}<br>To: ${email.recipients}<br>Subject: ${email.subject}<br>Timestamp: ${email.timestamp}<br><br>${email.body}`;
+    document.getElementById('email-view').append(element);
+
+    // Add button to archive or unarchive the email
+    const arc_element = document.createElement('button');
+    // Check whether inbox or archive
+    if (mailbox == 'inbox') {
+      // If it is inbox, name the button as 'Archived', and make request accordingly
+      arc_element.innerHTML = 'Archived';
+      arc_element.addEventListener('click', () => {
+        // PUT request to archive the email
+        fetch(`/emails/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+              archived: true,
+          })
+        });
+        // Load the user's inbox 
+        load_mailbox('inbox');
+      })
+    } else if (mailbox == 'archive') {
+    // If it is archive, name the button as 'Unarchive', and make request accordingly
+    arc_element.innerHTML = 'Unarchive';
+    arc_element.addEventListener('click', () => {
+      // PUT request to unarchive the email
+      fetch(`/emails/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            archived: false,
+        })
+      });
+      // Load the user's inbox 
+      load_mailbox('inbox');
+    })
+    }
+    document.querySelector('#email-view').append(arc_element);
   })
 
+  // Update that an email is read
   fetch(`/emails/${id}`, {
     method: 'PUT',
     body: JSON.stringify({
-        archived: true,
+        read: true,
     })
   })
 }
