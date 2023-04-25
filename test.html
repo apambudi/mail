@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head></head>
+    <body>
+        <center>
+            <h2>Example to clickable in JavaScript</h2>
+            <div id="cl">Press the clickable div</div>
+        </center>
+
+        <script>
+        document.getElementById('cl').addEventListener('click', cl_Div);
+        function cl_Div() {
+        document.getElementById('cl').innerHTML = "Welcome to JavaScript";
+        } 
+        </script>
+    </body>
+</html>
